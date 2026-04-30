@@ -127,3 +127,33 @@ def update_task_status(task_id: str, status: str, user=Depends(get_current_user)
     )
 
     return {"message": "Task updated"}
+
+# =======================
+# 📊 DASHBOARD API
+# =======================
+
+from datetime import datetime
+
+@app.get("/dashboard")
+def dashboard(user=Depends(get_current_user)):
+    if user["role"] == "admin":
+        tasks = list(db.tasks.find())
+    else:
+        tasks = list(db.tasks.find({"assigned_to": user["email"]}))
+
+    total = len(tasks)
+    completed = sum(1 for t in tasks if t.get("status") == "done")
+    pending = sum(1 for t in tasks if t.get("status") != "done")
+
+    today = datetime.utcnow()
+    overdue = sum(
+        1 for t in tasks
+        if t.get("deadline") and datetime.fromisoformat(t["deadline"]) < today and t.get("status") != "done"
+    )
+
+    return {
+        "total_tasks": total,
+        "completed": completed,
+        "pending": pending,
+        "overdue": overdue
+    }

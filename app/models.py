@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Literal
 from typing import Optional
+from datetime import datetime
 
 class UserCreate(BaseModel):
     name: str
@@ -15,6 +16,7 @@ class ProjectCreate(BaseModel):
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    assigned_to: str   # user email
+    assigned_to: str # email id
     project_id: str
     status: Literal["todo", "in_progress", "done"] = "todo"
+    deadline: Optional[datetime] = None
