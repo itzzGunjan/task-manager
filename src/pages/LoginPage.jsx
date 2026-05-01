@@ -20,6 +20,7 @@ export default function LoginPage({ onLogin }) {
       const session = await loginUser(form);
       onLogin(session.user);
     } catch (err) {
+      console.log(err.response);
       setError(err.response?.data?.detail || "Unable to sign in. Check your credentials.");
     } finally {
       setIsSubmitting(false);
