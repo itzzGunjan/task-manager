@@ -1,13 +1,8 @@
 import { useState } from "react";
-import { loginUser, saveSession } from "../services/authService";
-
-function inferRoleFromEmail(email) {
-  return email.toLowerCase().includes("admin") ? "admin" : "member";
-}
+import { loginUser } from "../services/authService";
 
 export default function LoginPage({ onLogin }) {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [role, setRole] = useState("member");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,13 +17,8 @@ export default function LoginPage({ onLogin }) {
     setIsSubmitting(true);
 
     try {
-      await loginUser(form);
-      const sessionUser = {
-        email: form.email.toLowerCase(),
-        role: role || inferRoleFromEmail(form.email)
-      };
-      saveSession(sessionUser);
-      onLogin(sessionUser);
+      const session = await loginUser(form);
+      onLogin(session.user);
     } catch (err) {
       setError(err.response?.data?.detail || "Unable to sign in. Check your credentials.");
     } finally {
@@ -85,18 +75,6 @@ export default function LoginPage({ onLogin }) {
               placeholder="password123"
               required
             />
-          </label>
-
-          <label className="mb-6 block">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Workspace role</span>
-            <select
-              className="w-full rounded-md border border-line px-3 py-2.5 outline-none transition focus:border-brand focus:ring-2 focus:ring-blue-100"
-              value={role}
-              onChange={(event) => setRole(event.target.value)}
-            >
-              <option value="admin">Admin</option>
-              <option value="member">Member</option>
-            </select>
           </label>
 
           <button
