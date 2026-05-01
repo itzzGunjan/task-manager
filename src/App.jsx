@@ -30,7 +30,7 @@ export default function App() {
       onViewChange={setActiveView}
       onLogout={handleLogout}
     >
-      {activeView === "dashboard" ? <DashboardPage onTasksLoaded={setTasks} /> : null}
+      {activeView === "dashboard" ? <DashboardPage currentUser={currentUser} onTasksLoaded={setTasks} /> : null}
       {activeView === "tasks" ? <TasksPage currentUser={currentUser} onTasksChanged={setTasks} /> : null}
       {activeView === "projects" && currentUser.role === "admin" ? <ProjectsPage /> : null}
     </AppShell>

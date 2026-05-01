@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 
 from bson import ObjectId
@@ -34,6 +35,11 @@ app.add_middleware(
     allow_origins=[
         "http://127.0.0.1:5173",
         "http://localhost:5173",
+        *[
+            origin.strip()
+            for origin in os.getenv("CORS_ORIGINS", "").split(",")
+            if origin.strip()
+        ],
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -143,7 +149,27 @@ def login(credentials: LoginRequest) -> dict:
             "role": user["role"],
         }
     )
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": serialize_user(user),
+    }
+
+
+@app.get("/me", response_model=UserResponse)
+def get_me(current_user: dict = Depends(get_current_user)) -> dict:
+    return {
+        "id": current_user["id"],
+        "name": current_user["name"],
+        "email": current_user["email"],
+        "role": current_user["role"],
+    }
+
+
+@app.get("/users", response_model=list[UserResponse])
+def get_users(current_user: dict = Depends(require_admin)) -> list[dict]:
+    users = users_collection.find({}, {"password": 0}).sort("name", ASCENDING)
+    return [serialize_user(user) for user in users]
 
 
 @app.post(
@@ -164,6 +190,12 @@ def create_project(
     result = projects_collection.insert_one(project_doc)
     created_project = projects_collection.find_one({"_id": result.inserted_id})
     return serialize_project(created_project)
+
+
+@app.get("/projects", response_model=list[ProjectResponse])
+def get_projects(current_user: dict = Depends(get_current_user)) -> list[dict]:
+    projects = projects_collection.find({}).sort("created_at", ASCENDING)
+    return [serialize_project(project) for project in projects]
 
 
 @app.post(

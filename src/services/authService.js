@@ -16,12 +16,17 @@ export async function loginUser(credentials) {
   });
   localStorage.setItem("token", data.access_token);
   const payload = decodeJwtPayload(data.access_token);
-  const user = {
+  const user = data.user || {
     email: payload.sub,
     role: payload.role
   };
   saveSession(user);
   return { ...data, user };
+}
+
+export async function signupUser(account) {
+  const { data } = await api.post("/signup", account);
+  return data;
 }
 
 export function saveSession(user) {
