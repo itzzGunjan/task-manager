@@ -1,8 +1,12 @@
 import { useState } from "react";
+import AppShell from "./components/AppShell";
+import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import { getSessionUser, getToken, logoutUser } from "./services/authService";
 
 export default function App() {
+  const [activeView, setActiveView] = useState("dashboard");
+  const [tasks, setTasks] = useState([]);
   const [currentUser, setCurrentUser] = useState(() => {
     if (!getToken()) return null;
     return getSessionUser();
@@ -18,23 +22,22 @@ export default function App() {
   }
 
   return (
-    <main className="min-h-screen bg-mist px-6 py-8 text-ink">
-      <section className="mx-auto max-w-6xl rounded-lg border border-line bg-white p-8 shadow-soft">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand">Signed in</p>
-            <h1 className="mt-2 text-3xl font-bold">Task Manager Dashboard</h1>
-            <p className="mt-2 text-slate-600">{currentUser.email} · {currentUser.role}</p>
-          </div>
-          <button
-            className="rounded-md border border-line px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            type="button"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </div>
-      </section>
-    </main>
+    <AppShell
+      currentUser={currentUser}
+      activeView={activeView}
+      onViewChange={setActiveView}
+      onLogout={handleLogout}
+    >
+      {activeView === "dashboard" ? (
+        <DashboardPage onTasksLoaded={setTasks} />
+      ) : (
+        <section className="rounded-lg border border-line bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-bold">{activeView === "tasks" ? "Tasks" : "Projects"}</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            {tasks.length} tasks loaded. This workspace view is coming in the next step.
+          </p>
+        </section>
+      )}
+    </AppShell>
   );
 }
