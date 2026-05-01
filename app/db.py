@@ -1,10 +1,16 @@
 import os
-from pymongo import MongoClient
+
 from dotenv import load_dotenv
+from pymongo import MongoClient
 
 load_dotenv()
 
-print("MONGO_URI:", os.getenv("MONGO_URI"))
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+DB_NAME = os.getenv("MONGO_DB_NAME", "task_manager")
 
 client = MongoClient(MONGO_URI)
-db = client["task_manager"]
+db = client[DB_NAME]
+
+users_collection = db["users"]
+projects_collection = db["projects"]
+tasks_collection = db["tasks"]
